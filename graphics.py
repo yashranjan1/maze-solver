@@ -2,7 +2,6 @@ from tkinter import BOTH, Canvas, Tk
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from objects.cell import Cell
     from objects.line import Line
 
 
@@ -28,8 +27,5 @@ class Window:
     def close(self):
         self.__running = False
 
-    def draw_line(self, line: "Line", fill_color: str) -> None:
+    def draw_line(self, line: "Line", fill_color: str = "white") -> None:
         line.draw(self.__canvas, fill_color)
-
-    def draw_cell(self, cell: "Cell", fill_color: str) -> None:
-        cell.draw(self.__canvas, fill_color)
