@@ -1,5 +1,5 @@
 import time
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 
 from objects.cell import Cell
 from objects.point import Point
@@ -28,6 +28,7 @@ class Maze:
         self.win = win
         self.__cells: List[List["Cell"]] = []
         self.__create_cells()
+        self.__break_entrance_and_exit_wall()
 
     def __create_cells(self) -> None:
         for col in range(self.num_cols):
@@ -51,6 +52,17 @@ class Maze:
 
     def __draw_cell(self, cell: "Cell") -> None:
         cell.draw()
+        self.__animate()
+
+    def __break_entrance_and_exit_wall(self):
+        if not (len(self.__cells) > 0 and len(self.__cells[0]) > 0):
+            raise Exception(
+                "maze does not have enough cells for making an exit and entrance"
+            )
+        self.__cells[0][0].has_top_wall = False
+        self.__cells[-1][-1].has_bottom_wall = False
+        self.__draw_cell(self.__cells[0][0])
+        self.__draw_cell(self.__cells[-1][-1])
 
     def __animate(self) -> None:
         self.win.redraw()
