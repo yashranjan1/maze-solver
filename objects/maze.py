@@ -1,5 +1,6 @@
+import random
 import time
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from objects.cell import Cell
 from objects.point import Point
@@ -18,6 +19,7 @@ class Maze:
         cell_size_x: int,
         cell_size_y: int,
         win: "Window",
+        seed: Optional[int] = None,
     ) -> None:
         self.x1 = x1
         self.y1 = y1
@@ -27,8 +29,11 @@ class Maze:
         self.cell_size_y = cell_size_y
         self.win = win
         self.__cells: List[List["Cell"]] = []
+        if seed != None:
+            random.seed(seed)
         self.__create_cells()
         self.__break_entrance_and_exit_wall()
+        self.__break_walls_recursively(0, 0)
 
     def __create_cells(self) -> None:
         for col in range(self.num_cols):
@@ -63,6 +68,7 @@ class Maze:
         self.__cells[-1][-1].has_bottom_wall = False
         self.__draw_cell(self.__cells[0][0])
         self.__draw_cell(self.__cells[-1][-1])
+        self.__animate()
 
     def __animate(self) -> None:
         self.win.redraw()
@@ -75,3 +81,39 @@ class Maze:
         if len(self.__cells) > 0:
             return len(self.__cells[0])
         return 0
+
+    def __break_walls_recursively(self, i, j):
+        self.__cells[i][j].visited = True
+        while True:
+            next_index_list = []
+
+            if i > 0 and not self.__cells[i - 1][j].visited:
+                next_index_list.append((i - 1, j))
+            if i < self.num_cols - 1 and not self.__cells[i + 1][j].visited:
+                next_index_list.append((i + 1, j))
+            if j > 0 and not self.__cells[i][j - 1].visited:
+                next_index_list.append((i, j - 1))
+            if j < self.num_rows - 1 and not self.__cells[i][j + 1].visited:
+                next_index_list.append((i, j + 1))
+
+            if len(next_index_list) == 0:
+                self.__draw_cell(self.__cells[i][j])
+                return
+
+            direction_index = random.randrange(len(next_index_list))
+            next_index = next_index_list[direction_index]
+
+            if next_index[0] == i + 1:
+                self.__cells[i][j].has_right_wall = False
+                self.__cells[i + 1][j].has_left_wall = False
+            if next_index[0] == i - 1:
+                self.__cells[i][j].has_left_wall = False
+                self.__cells[i - 1][j].has_right_wall = False
+            if next_index[1] == j + 1:
+                self.__cells[i][j].has_bottom_wall = False
+                self.__cells[i][j + 1].has_top_wall = False
+            if next_index[1] == j - 1:
+                self.__cells[i][j].has_top_wall = False
+                self.__cells[i][j - 1].has_bottom_wall = False
+
+            self.__break_walls_recursively(next_index[0], next_index[1])
