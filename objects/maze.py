@@ -34,6 +34,7 @@ class Maze:
         self.__create_cells()
         self.__break_entrance_and_exit_wall()
         self.__break_walls_recursively(0, 0)
+        self.__reset_cells_visited()
 
     def __create_cells(self) -> None:
         for col in range(self.num_cols):
@@ -82,7 +83,7 @@ class Maze:
             return len(self.__cells[0])
         return 0
 
-    def __break_walls_recursively(self, i, j):
+    def __break_walls_recursively(self, i, j) -> None:
         self.__cells[i][j].visited = True
         while True:
             next_index_list = []
@@ -117,3 +118,8 @@ class Maze:
                 self.__cells[i][j - 1].has_bottom_wall = False
 
             self.__break_walls_recursively(next_index[0], next_index[1])
+
+    def __reset_cells_visited(self) -> None:
+        for row in self.__cells:
+            for cell in row:
+                cell.visited = False
