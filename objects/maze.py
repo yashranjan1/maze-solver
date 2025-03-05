@@ -35,6 +35,7 @@ class Maze:
         self.__break_entrance_and_exit_wall()
         self.__break_walls_recursively(0, 0)
         self.__reset_cells_visited()
+        self.__solve()
 
     def __create_cells(self) -> None:
         for col in range(self.num_cols):
@@ -73,7 +74,7 @@ class Maze:
 
     def __animate(self) -> None:
         self.win.redraw()
-        time.sleep(0.05)
+        time.sleep(0.04)
 
     def get_cols(self) -> int:
         return len(self.__cells)
@@ -123,3 +124,42 @@ class Maze:
         for row in self.__cells:
             for cell in row:
                 cell.visited = False
+
+    def __solve(self) -> bool:
+        return self.__solve_r(0, 0)
+
+    def __solve_r(self, i: int, j: int) ->  bool:
+        self.__animate()
+        self.__cells[i][j].visited = True
+        if  i == (self.num_cols - 1) and j == (self.num_rows - 1):
+            return True
+
+        directions = ['left', 'right', 'up', 'down']
+
+        cords = {
+            'left': lambda i, j: (i - 1, j),
+            'right': lambda i, j: (i + 1, j),
+            'up': lambda i, j: (i, j - 1),
+            'down': lambda i, j: (i, j + 1),
+        }
+
+        is_wall = {
+            'left': lambda i, j: self.__cells[i][j].has_left_wall or self.__cells[i-1][j].has_right_wall,
+            'right': lambda i, j: self.__cells[i][j].has_right_wall or self.__cells[i+1][j].has_left_wall,
+            'up': lambda i, j: self.__cells[i][j].has_top_wall or self.__cells[i][j-1].has_bottom_wall,
+            'down': lambda i, j: self.__cells[i][j].has_bottom_wall or self.__cells[i][j+1].has_top_wall,
+        }
+
+        for dir in directions:
+            x, y = cords[dir](i, j)
+            is_cell_there = (x >= 0 and x < self.num_cols) and (y >= 0 and y < self.num_rows)
+            is_wall_between = is_wall[dir](i, j)
+            if is_wall and not is_wall_between and not self.__cells[x][y].visited:
+                self.__cells[i][j].draw_move(self.__cells[x][y])
+                result = self.__solve_r(x, y)
+                if result:
+                    return True
+                else:
+                    self.__cells[i][j].draw_move(self.__cells[x][y], True)
+                    pass 
+        return False
